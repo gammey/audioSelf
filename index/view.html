@@ -1,0 +1,110 @@
+<html>
+<head>
+	<link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.9/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/axios/0.18.0/axios.js"></script>
+<style>
+.centerbox{
+	margin-top:5%;
+	margin-left:30%;
+	margin-right:30%;
+}
+</style>
+</head>
+<body>
+	<div id="srclist">
+		
+		<ul class="list-group">
+    			<li class="list-group-item" v-for="(v,i) in src" v-on:click="setSrc(i)">{{ v.file }}</li>
+		</ul>
+		<form class="form-horizontal" role="form">
+		<div class="form-group">
+			<label for="firstname" class="col-lg-1 control-label">路径</label>
+			<div class="col-lg-3">
+				<input type="text" class="form-control" id="firstname" placeholder="路径" v-model="path" v-on:change="refreshSrc">
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="lastname" class="col-lg-1 control-label">格式</label>
+			<div class="col-lg-3">
+				<input type="text" class="form-control" id="lastname" placeholder="文件后缀" v-model="type" v-on:change="refreshSrc">
+			</div>
+			</div>
+		</form>		
+	</div>
+	<div id="audioPanel">
+		<audio ref='audio' controls>
+  			<source src="audioSrc" v-bind:type="audioType">
+		</audio>
+	</div>
+</body>
+<script>
+audioPanel = new Vue({
+	el: "#audioPanel",
+	data: {
+		audioSrc: "",
+		audioType:"audio/ogg",
+	},
+	methods:{
+		updateAudioSrc: function(file){
+			if(document.cookie.length > 0)
+			{
+				authData = JSON.parse(document.cookie);
+				token  = authData["token"];
+				username = authData["username"];
+				this.audioSrc = file+"?USER="+username+"&TOKEN="+token;
+				this.$refs.audio.src = this.audioSrc;
+			}
+			else
+			{
+				this.audioSrc = file;
+				window.location = "/index/login.html";
+			}
+		},
+		updateAudioType: function(typeStr){
+			this.audioType=typeStr;
+		}
+	}
+})
+
+srclist = new Vue({
+	el: "#srclist",
+	data: {
+		path:"testaudio",
+		type:"ogg",
+		src:[]
+	},
+	methods: {
+		initSrc: function(){
+			var that = this;
+			axios.get("/resource/list/"+this.path+"/"+this.type+"/")
+			.then(function(response){
+				if(response.data.success){
+					that.src = [];
+					for(let i in response.data.data)
+					{
+						that.src.push(response.data.data[i]);
+						audioPanel.updateAudioSrc(that.src[0]["file"])
+					}
+				}
+				else
+				{
+					alert(response.data.reason);
+				}
+			})
+		},
+		setSrc: function(index){
+			audioPanel.updateAudioSrc(this.src[index]["file"])
+		},
+		refreshSrc: function(){
+			this.initSrc();
+			audioPanel.updateAudioType("audio/"+this.type);
+		}
+	}
+})
+srclist.initSrc();
+</script>
+</html>
+

@@ -1,0 +1,68 @@
+<html>
+<head>
+	<link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="https://cdn.bootcss.com/vue/2.5.9/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/axios/0.18.0/axios.js"></script>
+<style>
+.centerbox{
+	margin-top:5%;
+	margin-left:30%;
+	margin-right:30%;
+}
+</style>
+</head>
+<body>
+<div class="centerbox">
+	<div class="panel panel-primary" id="login-panel">
+		<div class="panel-heading">
+			登录
+		</div>
+		<div class="panel-body">
+			<div class="form-group">
+    				<label for="name" class="col-sm-2 control-label">用户名</label>
+    				<input type="text" class="form-control" id="name" placeholder="请输入用户名" v-model="username">
+  			</div>
+        		<div class="form-group">
+    				<label for="password" class="col-sm-2 control-label">密码</label>
+    				<input type="password" class="form-control" id="password" placeholder="请输入密码" v-model="password">
+  			</div>
+			<button type="submit" class="btn btn-primary btn-block btn-lg" id="login" v-on:click="login">登录</button>
+		</div>
+	</div>
+</div>	
+
+</body>
+<script>
+loginPanel = new Vue({
+	el: "#login-panel",
+	data:{
+		username:"",
+		password:"",
+	},
+	methods: {
+		login: function(){
+			username = this.username;
+			password = this.password;
+			data = {"username":this.username,"password":this.password};
+			dataJson = JSON.stringify(data);
+			axios.post("/auth/token/",dataJson)
+			.then(function(response){
+				if(response.data.success){
+					token = response.data.data.token;
+					savedata = {"username":username,"password":password,"token":token}
+					document.cookie = JSON.stringify(savedata);
+					window.location = "/index/view.html";
+				}
+				else{
+					alert("登录失败")
+				}
+			})
+		}
+	}
+
+})
+</script>
+
+</html>
