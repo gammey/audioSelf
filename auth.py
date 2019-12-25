@@ -36,10 +36,3 @@ class authToken:
 	else:
 		return False;
 
-if __name__ == "__main__":
-	tokenStore = redis.Redis();
-	tkmgr = authToken("./user.json",tokenStore);
-	tkinfo = tkmgr.createToken("gammey","1313ilike")
-	tk = tkinfo["data"]["token"];
-	print tk;
-	print tkmgr.legalToken("gammey",tk);
