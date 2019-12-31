@@ -23,7 +23,11 @@
 		<div class="form-group">
 			<label for="firstname" class="col-lg-1 control-label">路径</label>
 			<div class="col-lg-3">
-				<input type="text" class="form-control" id="firstname" placeholder="路径" v-model="path" v-on:change="refreshSrc">
+				<input type="text" class="form-control" id="firstname" list="dirlist" placeholder="路径" v-model="path" v-on:change="refreshSrc">
+					<datalist id="dirlist">
+						<option v-for="i in dirlist" v-bind:value="i"></option>
+					</datalist>
+				</input>
 			</div>
 		</div>
 		<div class="form-group">
@@ -35,16 +39,17 @@
 		</form>		
 	</div>
 	<div id="audioPanel">
-		<audio ref='audio' controls>
+		<audio ref='audio' id="audio" controls>
   			<source src="audioSrc" v-bind:type="audioType">
 		</audio>
 	</div>
 </body>
 <script>
+var firstView = true;
 audioPanel = new Vue({
 	el: "#audioPanel",
 	data: {
-		audioSrc: "",
+		audioSrc: "testaudio",
 		audioType:"audio/ogg",
 	},
 	methods:{
@@ -56,6 +61,14 @@ audioPanel = new Vue({
 				username = authData["username"];
 				this.audioSrc = file+"?USER="+username+"&TOKEN="+token;
 				this.$refs.audio.src = this.audioSrc;
+				console.log(firstView)
+				if(firstView == false){
+					var audio = document.getElementById("audio");
+					audio.play();
+				}
+				else{
+					firstView = false;
+				}
 			}
 			else
 			{
@@ -72,13 +85,15 @@ audioPanel = new Vue({
 srclist = new Vue({
 	el: "#srclist",
 	data: {
-		path:"testaudio",
+		path:"",
 		type:"ogg",
-		src:[]
+		src:[],
+		dirlist:[]
 	},
 	methods: {
 		initSrc: function(){
 			var that = this;
+			if(this.path == ""){this.updateDirList();return false;}
 			axios.get("/resource/list/"+this.path+"/"+this.type+"/")
 			.then(function(response){
 				if(response.data.success){
@@ -86,12 +101,23 @@ srclist = new Vue({
 					for(let i in response.data.data)
 					{
 						that.src.push(response.data.data[i]);
-						audioPanel.updateAudioSrc(that.src[0]["file"])
 					}
+					audioPanel.updateAudioSrc(that.src[0]["file"])
 				}
 				else
 				{
 					alert(response.data.reason);
+				}
+			})
+			this.updateDirList();
+		},
+		updateDirList: function(){
+			var that = this;
+			axios.get("/resource/path/")
+			.then(function(response){
+				if(response.data.success){
+					that.dirlist = response.data.data;
+					//firstView = true;
 				}
 			})
 		},
@@ -101,6 +127,8 @@ srclist = new Vue({
 		refreshSrc: function(){
 			this.initSrc();
 			audioPanel.updateAudioType("audio/"+this.type);
+			firstView = true;
+			console.log(firstView)
 		}
 	}
 })

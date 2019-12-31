@@ -4,7 +4,7 @@ import redis
 import os
 from flask import Flask, request, make_response
 from auth import authToken
-from audioList import dirlist
+from audioList import dirlist, audioPathList, typeList
 
 tokenStore = redis.Redis();
 runpath=os.path.abspath(__file__).rstrip("server.py")
@@ -58,6 +58,22 @@ def viewStatic(filename):
 def resList(path,type):
 	return json.dumps(dirlist(path,type));
 
+@app.route("/resource/path/",methods=["GET"])
+def resPathList():
+	rlist = audioPathList();
+	if rlist:
+		return json.dumps({"success":True,"data":rlist});
+	else:
+		return json.dumps({"success":False});
+
+@app.route("/resource/type/<string:path>/",methods=["GET"])
+def resTypeList(path):
+	tplist = typeList(path);
+	if tplist:
+		return json.dumps({"success":True,"data":tplist})
+	else:
+		return json.dumps({"success":False})
+		
 #@app.route("/pathtest/<path:tpath>")
 #def testpath(tpath):
 #	return tpath;

@@ -14,9 +14,26 @@ def dirlist(dir,type):
 	else:
 		return {"success":False,"reason":"Empty Dir."};
 
+def audioPathList():
+	ans  = [];
+	rdir = runpath+"/source/";
+	for i in os.listdir(rdir):
+		if os.path.isdir(rdir+i):
+			ans.append(i);
+	return ans;
 
-#if __name__ =="__main__":
-#	print dirlist("testaudio","ogg")
+def typeList(dir):
+	typelist = [];
+	rdir = runpath+"/source/"+dir;
+	if os.path.exists(rdir):
+		for i in os.listdir(rdir):
+			type = i.split(".")[-1];
+			if type not in typelist:
+				typelist.append(type);
+	return typelist;
+
+if __name__ =="__main__":
+	print typeList("testaudio")
 
 
 
